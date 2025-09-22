@@ -3,41 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src * blob: data: 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <title>Telegram Clicker Game</title>
+    <title>Telegram Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 100%;
             text-align: center;
+            padding: 20px;
+            margin: 0;
         }
-        
-        h1 {
-            margin: 20px 0;
-            color: var(--tg-theme-text-color, #000000);
-        }
-        
         #score {
-            font-size: 48px;
+            font-size: 60px;
             font-weight: bold;
             margin: 30px 0;
             color: var(--tg-theme-button-color, #2481cc);
         }
-        
         .click-btn {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
@@ -48,157 +30,61 @@
             font-size: 24px;
             cursor: pointer;
             margin: 20px;
-            transition: all 0.1s;
         }
-        
-        .click-btn:active {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
-        
         .stats {
             display: flex;
             justify-content: space-around;
-            margin: 30px 0;
+            margin: 20px 0;
         }
-        
         .stat-item {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 15px;
-            border-radius: 10px;
-            flex: 1;
-            margin: 0 10px;
-        }
-        
-        .status {
-            margin: 20px 0;
             padding: 10px;
-            border-radius: 5px;
-            background: #f0f0f0;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎮 Telegram Clicker</h1>
-        
-        <div id="score">0</div>
-        <button class="click-btn" onclick="handleClick()">TAP</button>
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div>⚡️ CPS</div>
-                <div id="cps">1</div>
-            </div>
-            <div class="stat-item">
-                <div>💰 Всего</div>
-                <div id="total">0</div>
-            </div>
-        </div>
-        
-        <div class="status" id="status">Загрузка...</div>
-        <div class="status" id="userInfo"></div>
+    <h1>🎮 Clicker Game</h1>
+    <div id="score">0</div>
+    <button class="click-btn" onclick="click()">TAP</button>
+    <div class="stats">
+        <div class="stat-item">CPS: <span id="cps">1</span></div>
+        <div class="stat-item">Total: <span id="total">0</span></div>
     </div>
+    <div id="status">Loading...</div>
 
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
-        
-        // Расширяем на весь экран
         tg.expand();
-        tg.enableClosingConfirmation();
-        
+        tg.ready();
+
         let score = 0;
         let cps = 1;
-        
-        // Показываем информацию о пользователе
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            document.getElementById('userInfo').innerHTML = 
-                `👤 Игрок: ${user.first_name} ${user.last_name || ''}`;
-        }
-        
-        function handleClick() {
+
+        function click() {
             score += cps;
             updateDisplay();
-            
-            // Вибрация
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-            
-            // Отправка на сервер (если нужно)
-            sendToBackend();
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
-        
+
         function updateDisplay() {
-            document.getElementById('score').textContent = formatNumber(score);
+            document.getElementById('score').textContent = score;
             document.getElementById('cps').textContent = cps;
-            document.getElementById('total').textContent = formatNumber(score);
+            document.getElementById('total').textContent = score;
         }
-        
-        function formatNumber(num) {
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return num;
-        }
-        
-        // Автокликер
+
         setInterval(() => {
             score += cps;
             updateDisplay();
         }, 1000);
-        
-        // Улучшения каждые 10 секунд
+
         setInterval(() => {
             cps += 1;
             updateDisplay();
         }, 10000);
-        
-        // Проверка бэкенда
-        async function checkBackend() {
-            const backendUrl = "https://clicker6666-back-production.up.railway.app";
-            
-            try {
-                const response = await fetch(`${backendUrl}/api/health`);
-                if (response.ok) {
-                    document.getElementById('status').textContent = '✅ Сервер подключен';
-                    document.getElementById('status').style.background = '#d4edda';
-                } else {
-                    throw new Error('Server error');
-                }
-            } catch (error) {
-                document.getElementById('status').textContent = '⚠️ Сервер недоступен (игра работает локально)';
-                document.getElementById('status').style.background = '#fff3cd';
-            }
-        }
-        
-        async function sendToBackend() {
-            // Опционально: отправка данных на сервер
-            const backendUrl = "https://clicker6666-back-production.up.railway.app";
-            
-            try {
-                await fetch(`${backendUrl}/api/click`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: 'click',
-                        score: score,
-                        timestamp: Date.now()
-                    })
-                });
-            } catch (error) {
-                // Игнорируем ошибки отправки
-            }
-        }
-        
-        // Инициализация
-        tg.ready();
+
         updateDisplay();
-        checkBackend();
-        
-        console.log('Telegram Web App initialized:', tg);
-        console.log('User data:', tg.initDataUnsafe.user);
+        document.getElementById('status').textContent = '✅ Ready!';
     </script>
 </body>
 </html>
