@@ -1,5 +1,5 @@
 const tg = window.Telegram.WebApp;
-const BACKEND_URL = "https://your-railway-url.up.railway.app"; // Замените на ваш Railway URL
+const BACKEND_URL = "clicker6666-back-production.up.railway.app"; // Замените на ваш Railway URL
 
 tg.expand();
 
@@ -29,3 +29,4 @@ document.getElementById('send-btn').addEventListener('click', async () => {
     const result = await sendToBackend({message: 'Hello from Mini App!'});
     tg.showPopup({title: 'Успех!', message: 'Данные отправлены на сервер'});
 });
+
