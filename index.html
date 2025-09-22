@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Моя Mini App</h1>
+            <div id="user-info"></div>
+        </header>
+
+        <main>
+            <div class="card">
+                <h3>Панель управления</h3>
+                <button id="btn-primary" class="btn btn-primary">Основная кнопка</button>
+                <button id="btn-secondary" class="btn btn-secondary">Вторая кнопка</button>
+            </div>
+
+            <div class="card">
+                <h3>Форма ввода</h3>
+                <input type="text" id="text-input" placeholder="Введите текст...">
+                <button id="submit-btn" class="btn btn-success">Отправить</button>
+            </div>
+
+            <div class="card">
+                <h3>Результаты</h3>
+                <div id="output"></div>
+            </div>
+
+            <div class="card">
+                <h3>Взаимодействие с Telegram</h3>
+                <button id="tg-back" class="btn btn-info">Назад (Telegram)</button>
+                <button id="tg-close" class="btn btn-warning">Закрыть приложение</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
