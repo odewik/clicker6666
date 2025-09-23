@@ -1,90 +1,318 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Clicker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        #score {
-            font-size: 60px;
-            font-weight: bold;
-            margin: 30px 0;
-            color: var(--tg-theme-button-color, #2481cc);
-        }
-        .click-btn {
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            font-size: 24px;
-            cursor: pointer;
-            margin: 20px;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-        .stat-item {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 10px;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arcade Clicker - addictive incremental clicking game">
+  <title>Arcade Clicker</title>
+  
+  <!-- Важно: Content Security Policy для Telegram -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' blob: data:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; connect-src * 'unsafe-inline';">
+  
+  <!-- Preconnect to external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ea2a33',
+            'background-light': '#f8f6f6',
+            'background-dark': '#211111',
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          borderRadius: { 
+            DEFAULT: '0.125rem', 
+            lg: '0.25rem', 
+            xl: '0.5rem', 
+            full: '0.75rem' 
+          },
+        },
+      },
+    }
+  </script>
+  
+  <!-- Custom Styles -->
+  <style>
+    /* Pixelated image rendering */
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    
+    /* Coin button styles */
+    .coin-btn {
+      background: radial-gradient(circle at 30% 30%, #FFD700, #D4AF37);
+      border: 4px solid #FFD700;
+      box-shadow: inset -6px -6px 0px 0px rgba(0, 0, 0, 0.25), 8px 8px 0px 0px #211111;
+      transform: translate(-2px, -2px);
+      transition: all 0.1s ease-in-out;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .coin-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.25), 0px 0px 0px 0px #211111;
+    }
+    
+    /* Dark mode adjustments */
+    .dark .coin-btn {
+      box-shadow: inset -6px -6px 0px 0px rgba(0, 0, 0, 0.25), 8px 8px 0px 0px #000;
+    }
+    
+    .dark .coin-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.25), 0px 0px 0px 0px #000;
+    }
+    
+    /* Ensure proper body height */
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+    }
+    
+    /* Coin shine effect */
+    .coin-shine {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      top: 20px;
+      left: 30px;
+      filter: blur(5px);
+    }
+    
+    /* Coin text */
+    .coin-text {
+      font-weight: bold;
+      font-size: 24px;
+      color: #8B7500;
+      text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+      z-index: 1;
+    }
+    
+    /* Telegram Web App specific adjustments */
+    .tg-adjusted {
+      min-height: 100dvh !important;
+    }
+    
+    /* Prevent text selection */
+    .no-select {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+  </style>
 </head>
-<body>
-    <h1>🎮 Clicker Game</h1>
-    <div id="score">0</div>
-    <button class="click-btn" onclick="click()">TAP</button>
-    <div class="stats">
-        <div class="stat-item">CPS: <span id="cps">1</span></div>
-        <div class="stat-item">Total: <span id="total">0</span></div>
-    </div>
-    <div id="status">Loading...</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+<body class="bg-background-light dark:bg-background-dark font-display no-select tg-adjusted">
+  <!-- Main Game Container -->
+  <div class="relative flex flex-col justify-between w-full min-h-screen" style="min-height: 100dvh;">
+    
+    <!-- Header Section -->
+    <header class="flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+      <!-- Placeholder for alignment -->
+      <div class="w-12"></div>
+      
+      <!-- Game Title -->
+      <h1 class="text-2xl font-bold text-center text-black dark:text-white">
+        ARCADE CLICKER
+      </h1>
+      
+      <!-- Settings Button -->
+      <button class="text-black dark:text-white" aria-label="Settings">
+        <span class="material-symbols-outlined text-3xl">settings</span>
+      </button>
+    </header>
+    
+    <!-- Score Display Section -->
+    <section class="flex flex-col items-center py-6 px-4">
+      <p id="score-counter" class="text-5xl font-bold text-yellow-400 [text-shadow:_4px_4px_0_rgb(0_0_0_/_25%)]">
+        0
+      </p>
+      <p class="text-lg font-medium text-black/70 dark:text-white/70 mt-1">
+        SCORE
+      </p>
+    </section>
+    
+    <!-- Game Area Section -->
+    <main class="flex-grow flex items-center justify-center px-4" style="flex: 1;">
+      <button id="coin-button" class="coin-btn relative">
+        <div class="coin-shine"></div>
+        <span class="coin-text">$</span>
+      </button>
+    </main>
+    
+    <!-- Navigation Section -->
+    <nav class="border-t border-primary/20 bg-background-light dark:bg-background-dark/50 p-2 pb-4" aria-label="Main navigation">
+      <div class="flex justify-around">
+        <!-- Game Tab (Active) -->
+        <a class="flex flex-col items-center justify-end gap-1 text-primary w-20" href="#" aria-current="page">
+          <span class="material-symbols-outlined text-3xl">stadia_controller</span>
+          <p class="text-xs font-bold">GAME</p>
+        </a>
+        
+        <!-- Rank Tab -->
+        <a class="flex flex-col items-center justify-end gap-1 text-black/50 dark:text-white/50 w-20" href="#">
+          <span class="material-symbols-outlined text-3xl">leaderboard</span>
+          <p class="text-xs font-medium">RANK</p>
+        </a>
+        
+        <!-- Shop Tab -->
+        <a class="flex flex-col items-center justify-end gap-1 text-black/50 dark:text-white/50 w-20" href="#">
+          <span class="material-symbols-outlined text-3xl">paid</span>
+          <p class="text-xs font-medium">SHOP</p>
+        </a>
+      </div>
+    </nav>
+  </div>
 
-        let score = 0;
-        let cps = 1;
-
-        function click() {
-            score += cps;
-            updateDisplay();
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  <script>
+    // Telegram Web App Integration
+    let tg = null;
+    let isTelegram = false;
+    
+    // Check if running in Telegram
+    if (window.Telegram && window.Telegram.WebApp) {
+      tg = window.Telegram.WebApp;
+      isTelegram = true;
+      console.log('Running in Telegram Web App');
+      
+      // Initialize Telegram Web App
+      tg.expand();
+      tg.enableClosingConfirmation();
+      tg.ready();
+      
+      // Adjust for Telegram viewport
+      document.body.classList.add('tg-adjusted');
+    } else {
+      console.log('Running in regular browser');
+    }
+    
+    // Game logic
+    let score = 0;
+    const scoreCounter = document.getElementById('score-counter');
+    const coinButton = document.getElementById('coin-button');
+    
+    // Function to update score display
+    function updateScore() {
+      scoreCounter.textContent = score.toLocaleString();
+      
+      // Send score to Telegram if running in Mini App
+      if (isTelegram && tg && tg.sendData) {
+        const data = {
+          action: 'score_update',
+          score: score,
+          timestamp: Date.now()
+        };
+        tg.sendData(JSON.stringify(data));
+      }
+    }
+    
+    // Function to handle coin click with haptic feedback
+    function handleCoinClick() {
+      score += 1;
+      updateScore();
+      
+      // Add a small visual feedback
+      coinButton.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        coinButton.style.transform = 'scale(1)';
+      }, 100);
+      
+      // Haptic feedback in Telegram
+      if (isTelegram && tg && tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+    }
+    
+    // Touch event support for mobile
+    function handleTouchStart(e) {
+      e.preventDefault();
+      handleCoinClick();
+    }
+    
+    // Add event listeners
+    coinButton.addEventListener('click', handleCoinClick);
+    coinButton.addEventListener('touchstart', handleTouchStart, { passive: false });
+    
+    // Auto-save functionality
+    function autoSave() {
+      if (score > 0) {
+        localStorage.setItem('arcadeClickerScore', score.toString());
+        console.log('Game auto-saved');
+      }
+    }
+    
+    // Load saved game
+    function loadGame() {
+      const savedScore = localStorage.getItem('arcadeClickerScore');
+      if (savedScore) {
+        score = parseInt(savedScore) || 0;
+        updateScore();
+        console.log('Game loaded:', score);
+      }
+    }
+    
+    // Initialize the game
+    function initGame() {
+      loadGame();
+      updateScore();
+      
+      // Auto-save every 30 seconds
+      setInterval(autoSave, 30000);
+      
+      // Auto-save when page is about to close
+      window.addEventListener('beforeunload', autoSave);
+      
+      // Prevent context menu on long press
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.id === 'coin-button') {
+          e.preventDefault();
         }
-
-        function updateDisplay() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('cps').textContent = cps;
-            document.getElementById('total').textContent = score;
-        }
-
-        setInterval(() => {
-            score += cps;
-            updateDisplay();
-        }, 1000);
-
-        setInterval(() => {
-            cps += 1;
-            updateDisplay();
-        }, 10000);
-
-        updateDisplay();
-        document.getElementById('status').textContent = '✅ Ready!';
-    </script>
+      });
+      
+      console.log('Arcade Clicker initialized');
+      console.log('Telegram Mini App:', isTelegram);
+    }
+    
+    // Start the game when DOM is loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGame);
+    } else {
+      initGame();
+    }
+    
+    // Export for debugging
+    window.game = {
+      score: score,
+      updateScore: updateScore,
+      isTelegram: isTelegram
+    };
+  </script>
 </body>
 </html>
